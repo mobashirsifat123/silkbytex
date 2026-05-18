@@ -1,111 +1,137 @@
-import React from 'react';
+'use client';
+
 import Link from 'next/link';
-import Container from '@/components/common/Container';
-import SectionHeader from '@/components/common/SectionHeader';
-import { CASE_STUDIES } from '@/lib/constants';
-import { ArrowRight } from 'lucide-react';
+import { useRef, useCallback } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import type { Project } from '@prisma/client';
 
-function CaseStudyCard({
-  study,
-  index,
-}: {
-  study: (typeof CASE_STUDIES)[number];
-  index: number;
-}) {
+const capabilities = ['Websites', 'SaaS', 'AI automation', 'Commerce', 'Dashboards', 'Internal tools', 'Brand systems'];
+
+function ProjectPoster({ color, index }: { color: string; index: number }) {
   return (
-    <article className="rounded-[var(--radius-xl)] border border-border bg-bg-secondary/70 p-6 md:p-8 lg:p-10">
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)] lg:gap-12">
-        <div className="space-y-8">
-          <div className="flex flex-col gap-5 border-b border-white/5 pb-6 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-3">
-              <span className="text-overline text-accent-400">
-                Case Study {String(index + 1).padStart(2, '0')}
-              </span>
-              <h3 className="max-w-[18ch] text-heading-1">{study.name}</h3>
-            </div>
-
-            <Link
-              href={study.link.href}
-              className="focus-ring inline-flex items-center gap-2 self-start rounded-[var(--radius-md)] border border-border px-4 py-2.5 text-sm font-medium text-fg-primary transition-colors duration-[var(--duration-interaction-fast)] ease-[var(--ease-out)] hover:border-border-hover hover:bg-bg-elevated"
-            >
-              {study.link.label}
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-3">
-              <span className="text-overline text-fg-muted">SilkByteX Role</span>
-              <p className="text-body-sm text-fg-primary">{study.role}</p>
-            </div>
-
-            <div className="space-y-3">
-              <span className="text-overline text-fg-muted">Outcome</span>
-              <p className="text-body-sm text-fg-primary">{study.outcome}</p>
-            </div>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="space-y-3">
-              <span className="text-overline text-fg-muted">Problem</span>
-              <p className="text-body-sm text-fg-secondary">{study.problem}</p>
-            </div>
-
-            <div className="space-y-3 md:col-span-2">
-              <span className="text-overline text-fg-muted">Solution</span>
-              <p className="text-body-sm text-fg-secondary">{study.solution}</p>
-            </div>
-          </div>
-        </div>
-
-        <aside className="space-y-6 rounded-[var(--radius-lg)] border border-white/5 bg-bg-primary/40 p-5 md:p-6">
-          <div className="space-y-3">
-            <span className="text-overline text-fg-muted">Measured Result</span>
-            <ul className="space-y-3">
-              {study.metrics.map((metric) => (
-                <li key={metric} className="text-body-sm text-fg-primary">
-                  {metric}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <span className="text-overline text-fg-muted">Stack</span>
-            <div className="flex flex-wrap gap-2">
-              {study.tech.map((item) => (
-                <span
-                  key={item}
-                  className="inline-flex items-center rounded-full border border-border bg-bg-elevated px-3 py-1 text-xs font-medium text-fg-secondary"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </aside>
-      </div>
-    </article>
+    <div className="hm-work__poster" style={{ backgroundColor: color }}>
+      <div className="hm-work__poster-noise" />
+      <span className="hm-work__poster-orbit hm-work__poster-orbit--outer hm-work__parallax-slow" />
+      <span className="hm-work__poster-orbit hm-work__poster-orbit--inner hm-work__parallax-fast" />
+      <span className={`hm-work__poster-dot hm-work__poster-dot--${index % 4} hm-work__parallax-dots`} />
+      <span className="hm-work__poster-num" aria-hidden="true">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+    </div>
   );
 }
 
-export default function WorkSection() {
-  return (
-    <section id="work" className="section-atmosphere relative border-t border-white/5 py-[clamp(5rem,12vh,10rem)]">
-      <Container>
-        <SectionHeader
-          overline="CASE STUDIES"
-          title="Published proof from SilkByteX-owned work only"
-          description="There was no defensible client case-study material in this repository, so the proof layer now shows only SilkByteX work that can be supported directly by this codebase."
-          className="mb-16"
-        />
+function WorkCard({
+  project,
+  staggerIndex,
+}: {
+  project: Project;
+  staggerIndex: number;
+}) {
+  const reduceMotion = useReducedMotion();
+  const cardRef = useRef<HTMLElement>(null);
 
-        <div className="space-y-8">
-          {CASE_STUDIES.map((study, index) => (
-            <CaseStudyCard key={study.name} study={study} index={index} />
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      if (reduceMotion) return;
+      const el = cardRef.current;
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const nx = x * 2 - 1;
+      const ny = y * 2 - 1;
+
+      el.style.setProperty('--mx', String(nx));
+      el.style.setProperty('--my', String(ny));
+    },
+    [reduceMotion],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    el.style.setProperty('--mx', '0');
+    el.style.setProperty('--my', '0');
+  }, []);
+
+  const tags = project.servicesUsed ? project.servicesUsed.split(',').map((s: string) => s.trim()) : [];
+
+  return (
+    <motion.article
+      ref={cardRef}
+      className={`hm-work__card hm-work__card--${staggerIndex % 6}`}
+      style={{ '--mx': '0', '--my': '0' } as React.CSSProperties}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      initial={reduceMotion ? false : { opacity: 0, y: 72, filter: 'blur(8px)' }}
+      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.82, ease: [0.16, 1, 0.3, 1], delay: staggerIndex * 0.1 }}
+    >
+      <Link href={`/work/${project.slug}`} className="hm-work__card-link">
+        <ProjectPoster color={project.color || '#000'} index={staggerIndex} />
+
+        <div className="hm-work__card-meta">
+          <div>
+            <p className="hm-work__card-filter">Filter by</p>
+            <p className="hm-work__card-category">{project.category || project.kicker}</p>
+          </div>
+          <div className="hm-work__card-tags">
+            {tags.slice(0, 2).map((tag: string) => (
+              <span key={tag}>{tag}</span>
+            ))}
+          </div>
+        </div>
+
+        <h3 className="hm-work__card-title">{project.title}</h3>
+      </Link>
+    </motion.article>
+  );
+}
+
+export default function WorkSection({ projects = [] }: { projects?: Project[] }) {
+  return (
+    <section id="work" className="hm-work">
+      <motion.div
+        className="hm-work__header"
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-18% 0px' }}
+        transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <span className="hm-work__header-label">Selected work</span>
+        <div className="hm-work__filters" aria-label="Project categories">
+          {['All', 'Websites', 'SaaS', 'Automation', 'Commerce', 'Branding'].map((filter) => (
+            <button key={filter} type="button">
+              {filter}
+            </button>
           ))}
         </div>
-      </Container>
+        <Link href="/work" className="hm-work__header-link">
+          View all projects
+        </Link>
+      </motion.div>
+
+      <div className="hm-work__grid">
+        {projects.map((project, i) => (
+          <WorkCard key={project.id || project.slug} project={project} staggerIndex={i} />
+        ))}
+      </div>
+
+      <section className="hm-service-marquee" aria-label="SilkByteX capabilities">
+        <div>
+          {capabilities.map((capability) => (
+            <span key={capability}>{capability}</span>
+          ))}
+        </div>
+        <div aria-hidden="true">
+          {capabilities.map((capability) => (
+            <span key={capability}>{capability}</span>
+          ))}
+        </div>
+      </section>
     </section>
   );
 }

@@ -1,53 +1,44 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
-import GlobalAtmosphere from "@/components/layout/GlobalAtmosphere";
+import { Playfair_Display, DM_Sans } from "next/font/google";
+import SmoothScroll from "@/components/common/SmoothScroll";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const playfair = Playfair_Display({
   subsets: ["latin"],
+  variable: "--font-serif",
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const dmSans = DM_Sans({
   subsets: ["latin"],
+  variable: "--font-sans",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://silkbytex.com"),
-  title: {
-    default: "SilkByteX — Premium Software Studio",
-    template: "%s | SilkByteX",
-  },
+  title: "SilkByteX | Digital Creative Studio",
   description:
-    "We weave the future of software. SilkByteX is a premium software agency crafting world-class digital experiences.",
+    "SilkByteX is a creative digital studio that handcrafts products, brands, and experiences.",
   openGraph: {
-    type: "website",
-    locale: "en_US",
-    siteName: "SilkByteX",
-    title: "SilkByteX — Premium Software Studio",
+    title: "SilkByteX | Digital Creative Studio",
     description:
-      "We weave the future of software. SilkByteX is a premium software agency crafting world-class digital experiences.",
+      "SilkByteX is a creative digital studio that handcrafts products, brands, and experiences.",
+    type: "website",
   },
-  twitter: {
-    card: "summary_large_image",
-  },
-  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
-      <body className="relative min-h-screen overflow-x-hidden">
-        <GlobalAtmosphere />
-        <div className="relative z-10">{children}</div>
+    <html
+      lang="en"
+      className={`${playfair.variable} ${dmSans.variable} antialiased`}
+    >
+      <body className="relative min-h-screen bg-[#f2f0ee] text-[#0d0d0d] font-sans overflow-x-hidden">
+        <SmoothScroll>
+          <div className="relative z-10">{children}</div>
+        </SmoothScroll>
       </body>
     </html>
   );

@@ -1,10 +1,7 @@
-import { appendFile, mkdir } from 'node:fs/promises';
-import path from 'node:path';
 import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
 
 export const runtime = 'nodejs';
-
-const submissionsFile = path.join(process.cwd(), 'data', 'contact-submissions.ndjson');
 
 type ContactPayload = {
   name?: string;
@@ -74,28 +71,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: validation.error }, { status: 400 });
   }
 
-  const submission = {
-    id: crypto.randomUUID(),
-    submittedAt: new Date().toISOString(),
-    ...validation.data,
-    source: 'website-contact-form',
-    userAgent: request.headers.get('user-agent'),
-  };
-
   try {
-    await mkdir(path.dirname(submissionsFile), { recursive: true });
-    await appendFile(submissionsFile, `${JSON.stringify(submission)}\n`, 'utf8');
+    await prisma.contactSubmission.create({
+      data: {
+        name: validation.data.name,
+        email: validation.data.email,
+        projectType: validation.data.subject,
+        message: validation.data.message,
+      },
+    });
 
     return NextResponse.json({
       message: 'Message sent successfully. We received your inquiry.',
     });
   } catch (error) {
-    console.error('Failed to store contact submission', error);
+    console.error('Failed to store contact submission in Supabase', error);
 
     return NextResponse.json(
       {
-        message:
-          'We could not send your message right now. Please try again in a moment.',
+        message: 'We could not save your message right now. Please try again in a moment.',
       },
       { status: 500 },
     );

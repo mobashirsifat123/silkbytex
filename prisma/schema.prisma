@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  
+}
+
+model SiteSettings {
+  id                  String   @id @default(cuid())
+  siteName            String   @default("SilkByteX")
+  metaTitle           String   @default("SilkByteX | Creative Studio")
+  metaDescription     String   @default("Premium creative studio.")
+  ogTitle             String?
+  ogDescription       String?
+  primaryContactEmail String?
+  globalAnnouncement  String?
+  faviconUrl          String?
+  updatedAt           DateTime @updatedAt
+}
+
+model NavigationItem {
+  id        String   @id @default(cuid())
+  label     String
+  href      String
+  order     Int      @default(0)
+  isVisible Boolean  @default(true)
+  isButton  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HomepageContent {
+  id              String   @id @default(cuid())
+  heroEyebrow     String?
+  heroHeadline    String?
+  heroRotatingWords String? // comma-separated
+  heroSubheading  String?
+  heroCtaText     String?
+  heroCtaLink     String?
+  heroVisualUrl   String?
+  metaTitle       String?
+  metaDescription String?
+  updatedAt       DateTime @updatedAt
+}
+
+model Project {
+  id               String   @id @default(cuid())
+  title            String
+  slug             String   @unique
+  category         String?
+  kicker           String?
+  client           String?
+  year             String?
+  shortDescription String?
+  longDescription  String?
+  servicesUsed     String?
+  challenge        String?
+  approach         String?
+  outcome          String?
+  quoteText        String?
+  quoteAttribution String?
+  gallery          String?  // JSON string
+  color            String?  @default("#000000")
+  projectStatus    String?  @default("published")
+  isFeatured       Boolean  @default(false)
+  isDraft          Boolean  @default(false)
+  sortOrder        Int      @default(0)
+  imageUrl         String?
+  metaTitle        String?
+  metaDescription  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Service {
+  id               String   @id @default(cuid())
+  title            String
+  slug             String   @unique
+  shortDescription String?
+  longDescription  String?
+  includedFeatures String? // comma-separated or JSON
+  idealClient      String?
+  engagementType   String?
+  isFeatured       Boolean  @default(false)
+  sortOrder        Int      @default(0)
+  metaTitle        String?
+  metaDescription  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Story {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  excerpt         String?
+  content         String?
+  category        String?
+  author          String?
+  date            DateTime @default(now())
+  featuredImage   String?
+  isFeatured      Boolean  @default(false)
+  isDraft         Boolean  @default(true)
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AboutContent {
+  id              String   @id @default(cuid())
+  headline        String?
+  introText       String?
+  mission         String?
+  values          String?
+  process         String?
+  teamSection     String?
+  capabilityBlocks String?
+  stats           String?
+  metaTitle       String?
+  metaDescription String?
+  updatedAt       DateTime @updatedAt
+}
+
+model ContactContent {
+  id               String   @id @default(cuid())
+  headline         String?
+  intro            String?
+  emailAddresses   String?
+  phoneNumbers     String?
+  socialLinks      String?
+  locationBlocks   String?
+  projectTypes     String?
+  budgetOptions    String?
+  timelineOptions  String?
+  metaTitle        String?
+  metaDescription  String?
+  updatedAt        DateTime @updatedAt
+}
+
+model FooterContent {
+  id              String   @id @default(cuid())
+  ctaHeadline     String?
+  ctaText         String?
+  contactLinks    String? // JSON
+  locationInfo    String? // JSON
+  copyrightText   String?
+  updatedAt       DateTime @updatedAt
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  url       String   @unique
+  filename  String
+  mimetype  String?
+  size      Int?
+  createdAt DateTime @default(now())
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  company   String?
+  projectType String?
+  budget    String?
+  timeline  String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
