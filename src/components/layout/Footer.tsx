@@ -1,6 +1,18 @@
+import Image from 'next/image';
+import Link from 'next/link';
+
 export default function Footer() {
   return (
     <footer className="mt-32 rounded-t-[40px] bg-black text-white px-8 md:px-[6vw] pt-24 pb-12 pr-[calc(6vw+60px)]">
+      <Link href="/" className="mb-16 block h-24 w-24 overflow-hidden rounded-full border border-white/20" aria-label="SilkByteX home">
+        <Image
+          src="/brand/silkbytex-logo.jpeg"
+          alt="SilkByteX"
+          width={96}
+          height={96}
+          className="h-full w-full object-cover"
+        />
+      </Link>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-24">
         <div>
           <div className="font-sans text-[11px] text-[#999] uppercase tracking-widest font-bold mb-8">Want to collaborate?</div>

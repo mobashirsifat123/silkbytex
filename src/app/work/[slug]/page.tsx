@@ -3,22 +3,43 @@ import EditorialNav from '@/components/editorial/EditorialNav';
 import EditorialFooter from '@/components/editorial/EditorialFooter';
 import { notFound } from 'next/navigation';
 import ProjectDetailClient from '@/components/sections/ProjectDetailClient';
+import {
+  fallbackWorkProjects,
+  getFallbackProject,
+  mapPrismaProject,
+  type WorkProject,
+} from '@/lib/work-projects';
 
 export async function generateStaticParams() {
   try {
     const projects = await prisma.project.findMany({ select: { slug: true } });
-    return projects.map((project) => ({
+    const cmsParams = projects.map((project) => ({
       slug: project.slug,
     }));
-  } catch {
-    console.warn("Database unreachable during generateStaticParams, skipping static generation.");
-    return [];
+    const fallbackParams = fallbackWorkProjects.map((project) => ({
+      slug: project.slug,
+    }));
+    return [...cmsParams, ...fallbackParams];
+  } catch (error) {
+    console.warn("Database unreachable during generateStaticParams, using fallback work routes.", getErrorMessage(error));
+    return fallbackWorkProjects.map((project) => ({
+      slug: project.slug,
+    }));
   }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug } });
+  let project: { title: string; shortDescription?: string | null } | undefined | null;
+
+  try {
+    project = await prisma.project.findUnique({ where: { slug } });
+  } catch (error) {
+    console.warn("Project metadata fetch failed; using fallback metadata when available.", getErrorMessage(error));
+  }
+
+  project ||= getFallbackProject(slug);
+
   return {
     title: project ? `${project.title} — SilkByteX` : 'Project — SilkByteX',
     description: project?.shortDescription,
@@ -27,59 +48,72 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug } });
+  let project: WorkProject | undefined;
+  let nextProject: WorkProject | null = null;
+
+  try {
+    const cmsProject = await prisma.project.findUnique({ where: { slug } });
+
+    if (cmsProject && !cmsProject.isDraft && (cmsProject.projectStatus || 'published') === 'published') {
+      project = mapPrismaProject(cmsProject);
+
+      const nextProjectData = await prisma.project.findFirst({
+        where: {
+          isDraft: false,
+          projectStatus: 'published',
+          sortOrder: { gt: cmsProject.sortOrder },
+        },
+        orderBy: { sortOrder: 'asc' }
+      });
+
+      nextProject = nextProjectData ? mapPrismaProject(nextProjectData) : null;
+    }
+  } catch (error) {
+    console.warn("Project fetch failed; using fallback project when available.", getErrorMessage(error));
+  }
+
+  project ||= getFallbackProject(slug);
 
   if (!project) {
     notFound();
   }
 
-  // Find the next project for the "next project" CTA
-  const nextProjectData = await prisma.project.findFirst({
-    where: { sortOrder: { gt: project.sortOrder } },
-    orderBy: { sortOrder: 'asc' }
-  });
-
-  // Map the Prisma object to the format expected by ProjectDetailClient
-  const mappedProject = {
-    ...project,
-    client: project.client || undefined,
-    year: project.year || undefined,
-    tagline: undefined, // Prisma project doesn't have a tagline
-    summary: project.shortDescription || '',
-    size: 'large' as const,
-    kicker: project.kicker || project.category || '',
-    intro: project.longDescription || '',
-    services: project.servicesUsed ? project.servicesUsed.split(',').map(s => s.trim()) : undefined,
-    color: project.color || '#000000',
-    challenge: project.challenge ? { heading: 'The Challenge', body: project.challenge } : undefined,
-    approach: project.approach ? { heading: 'The Approach', body: project.approach } : undefined,
-    outcome: project.outcome ? { heading: 'The Outcome', body: project.outcome } : undefined,
-    quote: project.quoteText ? { text: project.quoteText, attribution: project.quoteAttribution || '' } : undefined,
-    nextProject: nextProjectData?.slug || undefined
-  };
-
-  const mappedNextProject = nextProjectData ? {
-    ...nextProjectData,
-    client: nextProjectData.client || undefined,
-    year: nextProjectData.year || undefined,
-    tagline: undefined,
-    summary: nextProjectData.shortDescription || '',
-    size: 'large' as const,
-    kicker: nextProjectData.kicker || nextProjectData.category || '',
-    intro: nextProjectData.longDescription || '',
-    services: nextProjectData.servicesUsed ? nextProjectData.servicesUsed.split(',').map(s => s.trim()) : undefined,
-    color: nextProjectData.color || '#000000',
-    challenge: nextProjectData.challenge ? { heading: 'The Challenge', body: nextProjectData.challenge } : undefined,
-    approach: nextProjectData.approach ? { heading: 'The Approach', body: nextProjectData.approach } : undefined,
-    outcome: nextProjectData.outcome ? { heading: 'The Outcome', body: nextProjectData.outcome } : undefined,
-    quote: nextProjectData.quoteText ? { text: nextProjectData.quoteText, attribution: nextProjectData.quoteAttribution || '' } : undefined,
-  } : null;
+  if (!nextProject) {
+    const currentIndex = fallbackWorkProjects.findIndex((item) => item.slug === project.slug);
+    nextProject = currentIndex >= 0
+      ? fallbackWorkProjects[(currentIndex + 1) % fallbackWorkProjects.length]
+      : null;
+  }
 
   return (
     <main className="hm-page">
       <EditorialNav />
-      <ProjectDetailClient project={mappedProject} nextProject={mappedNextProject} />
+      <ProjectDetailClient project={toProjectDetail(project)} nextProject={nextProject ? toProjectDetail(nextProject) : null} />
       <EditorialFooter />
     </main>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function toProjectDetail(project: WorkProject) {
+  return {
+    slug: project.slug,
+    title: project.title,
+    client: project.client,
+    year: project.year,
+    tagline: project.shortDescription,
+    summary: project.shortDescription,
+    size: 'large' as const,
+    kicker: project.kicker || project.category,
+    intro: project.longDescription,
+    services: project.servicesUsed ? project.servicesUsed.split(',').map((service) => service.trim()) : undefined,
+    color: project.color,
+    challenge: project.challenge ? { heading: 'The Challenge', body: project.challenge } : undefined,
+    approach: project.approach ? { heading: 'The Approach', body: project.approach } : undefined,
+    outcome: project.outcome ? { heading: 'The Outcome', body: project.outcome } : undefined,
+    quote: project.quoteText ? { text: project.quoteText, attribution: project.quoteAttribution || '' } : undefined,
+  };
 }

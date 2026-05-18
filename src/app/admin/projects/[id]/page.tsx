@@ -34,6 +34,8 @@ export default async function EditProject({ params }: { params: Promise<{ id: st
         quoteText: formData.get("quoteText") as string,
         quoteAttribution: formData.get("quoteAttribution") as string,
         color: formData.get("color") as string,
+        projectStatus: formData.get("projectStatus") as string,
+        isDraft: formData.get("isDraft") === "on",
         isFeatured: formData.get("isFeatured") === "on",
         sortOrder: parseInt((formData.get("sortOrder") as string) || "0"),
       }
@@ -133,9 +135,21 @@ export default async function EditProject({ params }: { params: Promise<{ id: st
 
         <h2 className="text-xl font-semibold border-b pb-2 mt-8">Visibility</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <div>
+            <label className="block text-sm font-medium mb-1">Status</label>
+            <select name="projectStatus" defaultValue={project.projectStatus || "published"} className="w-full p-2 border rounded">
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" name="isFeatured" id="isFeatured" defaultChecked={project.isFeatured} className="w-4 h-4" />
             <label htmlFor="isFeatured" className="text-sm font-medium">Feature on Homepage</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" name="isDraft" id="isDraft" defaultChecked={project.isDraft} className="w-4 h-4" />
+            <label htmlFor="isDraft" className="text-sm font-medium">Hide as draft</label>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Sort Order (lower is first)</label>

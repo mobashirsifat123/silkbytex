@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
@@ -28,9 +29,20 @@ export default function Navbar() {
   return (
     <>
       {/* Brand logo top left */}
-      <div className="fixed top-8 left-8 z-[100] font-sans font-bold text-xs tracking-widest uppercase mix-blend-difference pointer-events-none">
-        <span className="text-white">SilkByteX</span>
-      </div>
+      <Link
+        href="/"
+        className="fixed top-6 left-6 z-[100] block h-14 w-14 overflow-hidden rounded-full border border-white/30 bg-black/20 shadow-lg shadow-black/20"
+        aria-label="SilkByteX home"
+      >
+        <Image
+          src="/brand/silkbytex-logo.jpeg"
+          alt=""
+          width={56}
+          height={56}
+          priority
+          className="h-full w-full object-cover"
+        />
+      </Link>
       
       {/* Side Pill Toggle - Elevated Z-index so it's always accessible and doesn't get buried! */}
       <div 

@@ -4,20 +4,38 @@ import WorkSection from '@/components/sections/Work';
 import ProductBanner from '@/components/sections/ProductBanner';
 import EditorialFooter from '@/components/editorial/EditorialFooter';
 import prisma from '@/lib/prisma';
-import type { Project } from '@prisma/client';
+import {
+  fallbackWorkProjects,
+  getPublicProjects,
+  withFallbackProjects,
+  type WorkProject,
+} from '@/lib/work-projects';
 
 export default async function Home() {
   let homepageContent = null;
-  let projects: Project[] = [];
+  let projects: WorkProject[] = fallbackWorkProjects;
 
   try {
     homepageContent = await prisma.homepageContent.findFirst();
-    projects = await prisma.project.findMany({
-      where: { isFeatured: true },
-      orderBy: { sortOrder: 'asc' }
+    const cmsProjects = await prisma.project.findMany({
+      where: {
+        isDraft: false,
+        projectStatus: 'published',
+      },
+      orderBy: [
+        { isFeatured: 'desc' },
+        { sortOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
     });
-  } catch {
-    console.warn('Homepage CMS content unavailable; rendering static fallback.');
+    projects = withFallbackProjects(getPublicProjects(cmsProjects), 8);
+
+    if (projects.length === 0) {
+      console.warn('No published homepage projects found; rendering static fallback work cards.');
+      projects = fallbackWorkProjects;
+    }
+  } catch (error) {
+    console.warn('Homepage CMS project fetch failed; rendering static fallback work cards.', getErrorMessage(error));
   }
 
   return (
@@ -40,4 +58,8 @@ export default async function Home() {
       <EditorialFooter />
     </>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -57,7 +58,15 @@ export default function HMNav() {
         onClick={() => setOpen(false)}
         aria-label="SilkByteX home"
       >
-        SILK<br />BYTE<br />X
+        <Image
+          src="/brand/silkbytex-logo.jpeg"
+          alt=""
+          width={64}
+          height={64}
+          priority
+          className="hm-logo__image"
+        />
+        <span className="hm-logo__label">SilkByteX</span>
       </Link>
 
       {/* ── Countdown ────────────────────────────── */}

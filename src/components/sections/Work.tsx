@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRef, useCallback } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import type { Project } from '@prisma/client';
+import type { WorkProject } from '@/lib/work-projects';
 
 const capabilities = ['Websites', 'SaaS', 'AI automation', 'Commerce', 'Dashboards', 'Internal tools', 'Brand systems'];
 
@@ -25,7 +25,7 @@ function WorkCard({
   project,
   staggerIndex,
 }: {
-  project: Project;
+  project: WorkProject;
   staggerIndex: number;
 }) {
   const reduceMotion = useReducedMotion();
@@ -91,7 +91,7 @@ function WorkCard({
   );
 }
 
-export default function WorkSection({ projects = [] }: { projects?: Project[] }) {
+export default function WorkSection({ projects = [] }: { projects?: WorkProject[] }) {
   return (
     <section id="work" className="hm-work">
       <motion.div

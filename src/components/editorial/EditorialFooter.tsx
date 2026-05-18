@@ -1,12 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function EditorialFooter() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <footer className="hm-footer" aria-label="Site footer">
+      <Link href="/" className="hm-footer__brand" aria-label="SilkByteX home">
+        <Image
+          src="/brand/silkbytex-logo.jpeg"
+          alt="SilkByteX"
+          width={160}
+          height={160}
+          className="hm-footer__brand-image"
+        />
+      </Link>
 
       {/* ── Line-art sitting figure ───────────────────────── */}
       <svg

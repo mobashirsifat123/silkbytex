@@ -3,18 +3,32 @@ import EditorialFooter from '@/components/editorial/EditorialFooter';
 import TextReveal from '@/components/common/TextReveal';
 import RevealSection from '@/components/common/RevealSection';
 import prisma from '@/lib/prisma';
+import { fallbackWorkProjects, getPublicProjects, withFallbackProjects, type WorkProject } from '@/lib/work-projects';
 import Link from 'next/link';
 
-import { Project } from '@prisma/client';
-
 export default async function WorkPage() {
-  let projects: Project[] = [];
+  let projects: WorkProject[] = fallbackWorkProjects;
+
   try {
-    projects = await prisma.project.findMany({
-      orderBy: { sortOrder: 'asc' }
+    const cmsProjects = await prisma.project.findMany({
+      where: {
+        isDraft: false,
+        projectStatus: 'published',
+      },
+      orderBy: [
+        { isFeatured: 'desc' },
+        { sortOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
     });
-  } catch {
-    console.warn("Database connection issue. Skipping projects fetch.");
+    projects = withFallbackProjects(getPublicProjects(cmsProjects), 8);
+
+    if (projects.length === 0) {
+      console.warn("No published projects found. Rendering static fallback work index.");
+      projects = fallbackWorkProjects;
+    }
+  } catch (error) {
+    console.warn("Database connection issue. Rendering static fallback work index.", getErrorMessage(error));
   }
 
   return (
@@ -45,4 +59,8 @@ export default async function WorkPage() {
       <EditorialFooter />
     </main>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }

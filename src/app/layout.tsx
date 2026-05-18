@@ -16,14 +16,39 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://silkbytex.com"),
   title: "SilkByteX | Digital Creative Studio",
   description:
     "SilkByteX is a creative digital studio that handcrafts products, brands, and experiences.",
+  icons: {
+    icon: [
+      { url: "/brand/silkbytex-logo-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/silkbytex-logo-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/brand/silkbytex-apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: "SilkByteX | Digital Creative Studio",
     description:
       "SilkByteX is a creative digital studio that handcrafts products, brands, and experiences.",
     type: "website",
+    images: [
+      {
+        url: "/brand/silkbytex-logo-512.png",
+        width: 512,
+        height: 512,
+        alt: "SilkByteX logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "SilkByteX | Digital Creative Studio",
+    description:
+      "SilkByteX is a creative digital studio that handcrafts products, brands, and experiences.",
+    images: ["/brand/silkbytex-logo-512.png"],
   },
 };
 
